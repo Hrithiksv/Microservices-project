@@ -4,6 +4,7 @@ import com.MicroService.inventoryservice.dto.InventoryResponse;
 import com.MicroService.inventoryservice.repositiry.InventoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,10 +15,11 @@ import java.util.List;
 @Slf4j
 public class InventoryService {
 
-    private InventoryRepository inventoryRepository;
+    private final InventoryRepository inventoryRepository;
 
     @Transactional(readOnly = true)
     public List<InventoryResponse> isInStock(List<String> skuCode) {
+        log.info("Checking Inventory");
         return inventoryRepository.findBySkuCodeIn(skuCode).stream()
                 .map(inventory ->
                         InventoryResponse.builder()

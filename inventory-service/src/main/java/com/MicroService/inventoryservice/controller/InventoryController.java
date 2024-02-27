@@ -27,7 +27,7 @@ public class InventoryController {
 //    }
 
     //Readable format
-    //**http://localhost:8082/api/inventory?sku-code=iPhone_13&sku-code=iPhone_13_red.....
+    //**http://localhost:8082/api/inventory?skuCode=iPhone_13&skuCode=iPhone_13_red.....
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<InventoryResponse> isInStock(@RequestParam List<String> skuCode){
