@@ -1,5 +1,7 @@
 package com.MicroService.orderservice.service;
 
+import com.MicroService.orderservice.config.WebClientConfig;
+import com.MicroService.orderservice.dto.InventoryResponse;
 import com.MicroService.orderservice.dto.OrderLineItemsDto;
 import com.MicroService.orderservice.dto.OrderRequest;
 import com.MicroService.orderservice.model.Order;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,15 +35,24 @@ public class OrderService {
 
         order.setOrderLineItems(orderLineItems);
 
-        //**Call inventory service, and place order is product is in stock
+        List<String> skuCode= order.getOrderLineItems().stream()
+                .map(OrderLineItems::getSkuCode)
+                .toList();
 
-        Boolean result= webClient.get()
-                .uri("http://localhost:8082/api/inventory")
+
+        //**Call inventory service, and place order is product is in stock
+        InventoryResponse[] inventoryResponsesArray = webClient.get()
+                .uri("http://localhost:8082/api/inventory",
+                        uriBuilder -> uriBuilder.queryParam("skuCode",skuCode).build())
                 .retrieve()
-                .bodyToMono(Boolean.class)
+                .bodyToMono(InventoryResponse[].class)
                 .block();
 
-        if(Boolean.TRUE.equals(result)){
+//        assert inventoryResponsesArray != null;
+        boolean allProductsInStock= Arrays.stream(inventoryResponsesArray)
+                .allMatch(InventoryResponse::isInStock);
+
+        if(allProductsInStock){
             orderRepository.save(order);
         }else {
             throw new IllegalArgumentException("Product is not in stock try again later");
